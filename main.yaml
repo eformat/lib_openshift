@@ -1,0 +1,30 @@
+# git clone https://github.com/openshift/openshift-ansible
+# cp -R ~/git/openshift-ansible/roles/lib_openshift roles/ # not in galaxy yet
+# ansible-playbook -vv main.yaml
+---
+- hosts: localhost
+  vars:
+    project_name: "foobar"
+  roles:
+    - { role: lib_openshift }
+  tasks:
+    - name: create namespace "{{ project_name }}"
+      oc_project:
+        state: present
+        kubeconfig: "{{ lookup('env','HOME') }}/.kube/config"
+        name: "{{ project_name }}"
+        display_name: "{{ project_name }}"
+        node_selector:
+          - node-role.kubernetes.io/compute=true
+
+    - name: list namespace "{{ project_name }}"
+      oc_project:
+        state: list
+        kubeconfig: "{{ lookup('env','HOME') }}/.kube/config"
+        name: "{{ project_name }}"
+
+    - name: delete namespace "{{ project_name }}"
+      oc_project:
+        state: absent
+        kubeconfig: "{{ lookup('env','HOME') }}/.kube/config"
+        name: "{{ project_name }}"
